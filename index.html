@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Histogram</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="csvUrl" placeholder="Enter CSV URL" size="50">
+    <button onclick="loadAndDraw()">Draw Histogram</button>
+    <canvas id="histogramCanvas" width="800" height="400"></canvas>
+
+    <script>
+    async function loadAndDraw() {
+        const url = document.getElementById('csvUrl').value;
+        if (!url) {
+            alert('Please enter a CSV URL');
+            return;
+        }
+
+        const response = await fetch(url);
+        const text = await response.text();
+        const data = parseCSV(text);
+
+        if (data.length < 2) {
+            alert('CSV should have at least two columns for the histogram.');
+            return;
+        }
+
+        drawHistogram(data);
+    }
+
+    function parseCSV(csvText) {
+        const rows = csvText.split('\n').filter(row => row.trim() !== '');
+        return rows.map(row => row.split(',').map(Number));
+    }
+
+    function drawHistogram(data) {
+        const canvas = document.getElementById('histogramCanvas');
+        const ctx = canvas.getContext('2d');
+        const margin = 30;
+        const width = canvas.width - 2 * margin;
+        const height = canvas.height - 2 * margin;
+        
+        // Assuming first two columns for simplicity
+        const column1 = data.map(row => row[0]);
+        const column2 = data.map(row => row[1]);
+
+        // Find max value for scaling
+        const maxValue = Math.max(...column1, ...column2);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = (width / Math.max(column1.length, column2.length)) * 0.8; // 80% of available space
+
+        // Drawing bars
+        for(let i = 0; i < column1.length; i++) {
+            let barHeight1 = (column1[i] / maxValue) * height;
+            ctx.fillStyle = 'red';
+            ctx.fillRect(margin + i * barWidth, canvas.height - margin - barHeight1, barWidth / 2, barHeight1);
+
+            if (i < column2.length) {
+                let barHeight2 = (column2[i] / maxValue) * height;
+                ctx.fillStyle = 'blue';
+                ctx.fillRect(margin + i * barWidth + barWidth / 2, canvas.height - margin - barHeight2, barWidth / 2, barHeight2);
+            }
+        }
+
+        // Simple axis
+        ctx.beginPath();
+        ctx.moveTo(margin, margin);
+        ctx.lineTo(margin, canvas.height - margin);
+        ctx.lineTo(canvas.width - margin, canvas.height - margin);
+        ctx.stroke();
+    }
+    </script>
+</body>
+</html>
