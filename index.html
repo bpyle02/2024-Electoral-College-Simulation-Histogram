@@ -10,20 +10,16 @@
     </style>
 </head>
 <body>
-    <input type="text" id="csvUrl" placeholder="Enter CSV URL" size="50">
     <button onclick="loadAndDraw()">Draw Histogram</button>
     <canvas id="histogramCanvas" width="800" height="400"></canvas>
 
     <script>
     async function loadAndDraw() {
-        const url = document.getElementById('csvUrl').value;
-        if (!url) {
-            alert('Please enter a CSV URL');
-            return;
-        }
-
+        const url = 'https://media.githubusercontent.com/media/bpyle02/2024-Electoral-College-Simulation-Histogram/refs/heads/main/election_simulation.csv';
+        console.log("Loading...")
         const response = await fetch(url);
         const text = await response.text();
+        console.log("Parsing data...")
         const data = parseCSV(text);
 
         if (data.length < 2) {
